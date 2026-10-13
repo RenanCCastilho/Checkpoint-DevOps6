@@ -1,103 +1,61 @@
-# Checkpoint-DevOps
+# MotorApp — API em Container (Docker + Azure)
 
-# Lista de Endpoints
-## ***Proprietarios***
-## GET 
-http://rm94394motorapp.brazilsouth.azurecontainer.io:8080/proprietarios
-### Descrição: Consulta a lista de proprietarios cadastrados.
-### Exemplo de resposta:
-          
-          {
-              "nome": "Proprietario",
-              "cidade": "Cidade do Proprietario",
-              "telefone": "Telefone do Proprietario"
-          }
+![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.1-6DB33F?logo=springboot&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![Azure](https://img.shields.io/badge/Azure_Container_Instances-0078D4?logo=microsoftazure&logoColor=white)
 
+API REST para cadastro de **veículos e seus proprietários**, empacotada em uma imagem **Docker** e publicada no **Azure Container Instances**.
 
-## POST
-http://rm94394motorapp.brazilsouth.azurecontainer.io:8080/proprietarios
-### Descrição: Cadastra um novo proprietario.
-### Exemplo de solicitação:
+Ela é a versão containerizada do [MotorApp](https://github.com/RenanCCastilho/Checkpoint-DevOps), que roda no Azure App Service.
 
-          {
-          "nome": "Novo Proprietario",
-          "cidade": "Cidade do Novo Proprietario",
-          "telefone": "Telefone do Novo Proprietario"
-          }
+## Endpoints
 
+| Recurso | Rota base | Operações |
+|---|---|---|
+| Proprietários | `/proprietarios` | `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}` |
+| Veículos | `/veiculos` | `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}` |
 
+**Exemplo — cadastrar veículo** (use o id de um proprietário já cadastrado)
 
-## PUT 
-http://rm94394motorapp.brazilsouth.azurecontainer.io:8080/proprietarios/1
-### Descrição: Atualiza informações sobre o proprietario cadastrado.
-### Exemplo de solicitação:
+```json
+POST /veiculos
+{
+  "modelo": "Onix",
+  "montadora": "Chevrolet",
+  "anoFabricacao": 2023,
+  "km": 0.0,
+  "proprietario": { "id": 1 }
+}
+```
 
-            {
-              "nome": "Atualizar Proprietario",
-              "cidade": "Atualizar cidade do Proprietario",
-              "telefone": "Atualizar telefone do Proprietario"
-          }
+## Banco de dados
 
+O script de criação das tabelas `PROPRIETARIOS` e `VEICULOS` (Oracle) está em [`DDL_BD.txt`](DDL_BD.txt).
 
+## Executando com Docker
 
-## DELETE 
-http://rm94394motorapp.brazilsouth.azurecontainer.io:8080/proprietarios/1
-### Descrição: Deleta o proprietario selecionado. No caso deletará o proprietario com o id = 1.
-## ***Veiculos***
-## GET 
-http://rm94394motorapp.brazilsouth.azurecontainer.io:8080/veiculos
-### Descrição: Consulta a lista de veículos cadastrados. 
-### Exemplo de resposta:
-          
-          {
-              "modelo": "Modelo do Veiculo",
-              "montadora": "Montadora do Veiculo",
-              "anoFabricacao": 2023,
-              "km": 0.0,
-              "proprietario": {
-                  "id": 1
-                  "nome": "Nome do Proprietario"
-                  "cidade": "Cidade do Propretario"
-                  "telefone": "Telefone do Proprietario"
-              }
-          }
-          
+```bash
+# 1. Gerar o .jar
+./mvnw clean package -DskipTests
 
-## POST
-http://rm94394motorapp.brazilsouth.azurecontainer.io:8080/veiculos
-### Observação: Colocar id de um proprietario ja cadastrado!
-### Descrição: Cadastra um novo veículo
-### Exemplo de solicitação:
+# 2. Construir a imagem
+docker build -t motor-app .
 
-          {
-              "modelo": "Modelo do Novo Veiculo",
-              "montadora": "Montadora do Novo Veiculo",
-              "anoFabricacao": 2023,
-              "km": 0.0,
-              "proprietario": {
-                  "id": 1
-              }
-          }
+# 3. Rodar o container
+docker run -p 8081:8081 \
+  -e DB_USERNAME=seu_usuario \
+  -e DB_PASSWORD=sua_senha \
+  motor-app
+```
 
+Para executar sem Docker:
 
-## PUT 
-http://rm94394motorapp.brazilsouth.azurecontainer.io:8080/veiculos/1
-### Descrição: Atualiza informações sobre o veículo cadastrado.
-### Exemplo de solicitação:
+```bash
+export DB_USERNAME=seu_usuario DB_PASSWORD=sua_senha
+./mvnw spring-boot:run
+```
 
-       {
-              "modelo": "Atualiza o modelo do Veiculo",
-              "montadora": "Atualiza a montadora do Veiculo",
-              "anoFabricacao": 2023,
-              "km": 0.0,
-              "proprietario": {
-                  "id": 1
-              }
-          }
+---
 
-
-## DELETE 
-http://rm94394motorapp.brazilsouth.azurecontainer.io:8080/veiculos/1
-### Descrição: Deleta o veículo selecionado. No caso deletará o veículo com o id = 1.
-
-
+Projeto acadêmico desenvolvido na **FIAP** (DevOps Tools & Cloud Computing, 2023).
